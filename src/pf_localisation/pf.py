@@ -24,8 +24,8 @@ class PFLocaliser(PFLocaliserBase):
         for _ in range(num_particles):
             particle = Pose()
 
-            particle.position.x = initialpose.pose.pose.position.x + gauss(0, 0.3)  # Adjust noise parameters as needed
-            particle.position.y = initialpose.pose.pose.position.y + gauss(0, 0.3)  # Adjust noise parameters as needed
+            particle.position.x = initialpose.pose.pose.position.x + gauss(0, 0.1)  # Adjust noise parameters as needed
+            particle.position.y = initialpose.pose.pose.position.y + gauss(0, 0.6)  # Adjust noise parameters as needed
 
             initial_yaw = getHeading(initialpose.pose.pose.orientation)
             particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, gauss(0, 0.2))  # Adjust noise parameters as needed
