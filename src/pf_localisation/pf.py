@@ -24,8 +24,8 @@ class PFLocaliser(PFLocaliserBase):
         for _ in range(num_particles):
             particle = Pose()
 
-            particle.position.x = initialpose.pose.pose.position.x + gauss(0, 0.05)  # Adjust noise parameters as needed
-            particle.position.y = initialpose.pose.pose.position.y + gauss(0, 0.05)  # Adjust noise parameters as needed
+            particle.position.x = initialpose.pose.pose.position.x + gauss(0, 0.35)  # Adjust noise parameters as needed
+            particle.position.y = initialpose.pose.pose.position.y + gauss(0, 0.35)  # Adjust noise parameters as needed
 
             initial_yaw = getHeading(initialpose.pose.pose.orientation)
             particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, gauss(0, 0.2))  # Adjust noise parameters as needed
@@ -68,9 +68,9 @@ class PFLocaliser(PFLocaliserBase):
                     break
 
             new_particle = Pose()
-            new_particle.position.x = selected_particle.position.x + gauss(0, 0.3)
-            new_particle.position.y = selected_particle.position.y + gauss(0, 0.3)
-            new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.2))
+            new_particle.position.x = selected_particle.position.x + gauss(0, 0.15)
+            new_particle.position.y = selected_particle.position.y + gauss(0, 0.15)
+            new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.15))
 
             new_particle_cloud.poses.append(new_particle)
 
