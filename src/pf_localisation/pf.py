@@ -68,9 +68,9 @@ class PFLocaliser(PFLocaliserBase):
                     break
 
             new_particle = Pose()
-            new_particle.position.x = selected_particle.position.x + gauss(0, 0.15)
-            new_particle.position.y = selected_particle.position.y + gauss(0, 0.15)
-            new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.15))
+            new_particle.position.x = selected_particle.position.x + gauss(0, 0.25)
+            new_particle.position.y = selected_particle.position.y + gauss(0, 0.25)
+            new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.25))
 
             new_particle_cloud.poses.append(new_particle)
 
