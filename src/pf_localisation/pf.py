@@ -158,8 +158,10 @@ class PFLocaliser(PFLocaliserBase):
 		particle.position.x = 6*(gauss(0, 1))  # Starts at 0,0 so not effected by start pos of robot
 		particle.position.y = 6*(gauss(0, 1))  # 6 times the variance is enough to cover the whole map
 
-	    initial_yaw = getHeading(initialpose.pose.pose.orientation)
-	    particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, 6*(gauss(0, 1)) ) 
+	    quat_tf = [0, 1, 0, 0]
+            quat_msg = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
+
+            particle.orientation = rotateQuaternion(quat_msg, 6*(gauss(0, 1))) 
 
 	    particle_cloud.poses.append(particle)
 	    
