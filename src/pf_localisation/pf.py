@@ -6,6 +6,7 @@ from .util import rotateQuaternion, getHeading
 from random import random , gauss, uniform
 from time import time
 
+# To install scikit, write: pip3 install -U scikit-learn
 import numpy as np
 from sklearn.cluster import DBSCAN
 from scipy.spatial import distance
