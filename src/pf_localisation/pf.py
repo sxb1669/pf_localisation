@@ -151,17 +151,17 @@ class PFLocaliser(PFLocaliserBase):
         estimated_point.orientation = estimated_orientation
 
         return estimated_point
-"""
-	def re_intialisation(self):
-		num_particles = 500  # Number of particles in the particle cloud
-		for _ in range(num_particles):
-  			particle.position.x = 6*(gauss(0, 1))  # Starts at 0,0 so not effected by start pos of robot
-      			particle.position.y = 6*(gauss(0, 1))  # 6 times the variance is enough to cover the whole map
+	    
+    def re_intialisation(self):
+	num_particles = 500  # Number of particles in the particle cloud
+	for _ in range(num_particles):
+		particle.position.x = 6*(gauss(0, 1))  # Starts at 0,0 so not effected by start pos of robot
+		particle.position.y = 6*(gauss(0, 1))  # 6 times the variance is enough to cover the whole map
 
-		    initial_yaw = getHeading(initialpose.pose.pose.orientation)
-		    particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, 6*(gauss(0, 1)) ) 
+	    initial_yaw = getHeading(initialpose.pose.pose.orientation)
+	    particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, 6*(gauss(0, 1)) ) 
 
-		    particle_cloud.poses.append(particle)
-		    
-		self.particle_cloud = new_particle_cloud
-  """
+	    particle_cloud.poses.append(particle)
+	    
+	self.particle_cloud = new_particle_cloud
+
