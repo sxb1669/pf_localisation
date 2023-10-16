@@ -16,7 +16,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_DRIFT_NOISE = 0
 
     def initialise_particle_cloud(self, initialpose):
-        num_particles = 500  # Number of particles in the particle cloud
+        num_particles = 100  # Number of particles in the particle cloud
 
         particle_cloud = PoseArray()
         particle_cloud.header.frame_id = "map"  # Adjust the frame_id as needed
