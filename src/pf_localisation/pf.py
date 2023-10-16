@@ -3,13 +3,9 @@ from .pf_base import PFLocaliserBase
 import math
 import rospy
 from .util import rotateQuaternion, getHeading
-from random import random , gauss, uniform
-from time import time
-
-# To install scikit, write: pip3 install -U scikit-learn
+from random import random, gauss
 import numpy as np
 from sklearn.cluster import DBSCAN
-from scipy.spatial import distance
 
 class PFLocaliser(PFLocaliserBase):
        
@@ -19,6 +15,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_ROTATION_NOISE = 0
         self.ODOM_TRANSLATION_NOISE = 0  
         self.ODOM_DRIFT_NOISE = 0
+        self.kidnapped = False  # Add a kidnapped flag
 
     def initialise_particle_cloud(self, initialpose):
         num_particles = 500  # Number of particles in the particle cloud
@@ -39,27 +36,40 @@ class PFLocaliser(PFLocaliserBase):
 
         return particle_cloud
 
+    def reinitialization(self):
+        num_particles = 500  # Number of particles in the particle cloud
+        new_particle_cloud = PoseArray()
+        new_particle_cloud.header.frame_id = "map"  # Adjust the frame_id as needed
+
+        for _ in range(num_particles):
+            particle = Pose()
+
+            particle.position.x = 6 * gauss(0, 1)  # Starts at 0,0 so not affected by the start position of the robot
+            particle.position.y = 6 * gauss(0, 1)  # 6 times the variance is enough to cover the whole map
+
+            quat_tf = [0, 1, 0, 0]
+            quat_msg = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
+
+            particle.orientation = rotateQuaternion(quat_msg, 6 * gauss(0, 1))  # Ignore the start angle of the robot
+
+            new_particle_cloud.poses.append(particle)
+
+        self.particle_cloud = new_particle_cloud
 
     def update_particle_cloud(self, scan):
         weights = []
 
-        
-        for particle in self.particlecloud.poses:
+        for particle in self.particle_cloud.poses:
             weight = self.sensor_model.get_weight(scan, particle)
-            print("Input Laser Scan Data:", scan)
-            print("Particle Pose:", particle)
             weights.append(weight)
 
         total_weight = sum(weights)
         normalized_weights = [w / total_weight for w in weights]
-        
-        print("Total Weight:", total_weight)
-        print("Normalized Weights:", normalized_weights)
 
         new_particle_cloud = PoseArray()
         new_particle_cloud.header.frame_id = "map"
 
-        num_particles = len(self.particlecloud.poses)
+        num_particles = len(self.particle_cloud.poses)
 
         for _ in range(num_particles):
             rand_value = random()
@@ -69,7 +79,7 @@ class PFLocaliser(PFLocaliserBase):
             for i in range(num_particles):
                 cumulative_weight += normalized_weights[i]
                 if cumulative_weight >= rand_value:
-                    selected_particle = self.particlecloud.poses[i]
+                    selected_particle = self.particle_cloud.poses[i]
                     break
 
             new_particle = Pose()
@@ -79,8 +89,7 @@ class PFLocaliser(PFLocaliserBase):
 
             new_particle_cloud.poses.append(new_particle)
 
-        self.particlecloud = new_particle_cloud
-
+        self.particle_cloud = new_particle_cloud
     def estimate_pose(self):
         # return Pose()
         # rospy.loginfo("estimating")
@@ -152,17 +161,5 @@ class PFLocaliser(PFLocaliserBase):
 
         return estimated_point
 	    
-    def re_intialisation(self):
-	    num_particles = 500  # Number of particles in the particle cloud
-	    for _ in range(num_particles):
-		    particle.position.x = 6*(gauss(0, 1))  # Starts at 0,0 so not effected by start pos of robot
-		    particle.position.y = 6*(gauss(0, 1))  # 6 times the variance is enough to cover the whole map
-	    quat_tf = [0, 1, 0, 0]
-            quat_msg = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
-
-            particle.orientation = rotateQuaternion(quat_msg, 6*(gauss(0, 1))) #Ignore start angle of robot 
-
-	    particle_cloud.poses.append(particle)
-	    
-	    self.particle_cloud = new_particle_cloud
+    
 
