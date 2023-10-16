@@ -87,8 +87,8 @@ class PFLocaliser(PFLocaliserBase):
         poses = self.particlecloud.poses
         coordinates = np.array([[p.position.x, p.position.y] for p in poses]) # Extract the x,y coordinates
 
-        core_distance = .15 # Epsilon distance
-        core_samples = 50 # Number of points needed to be considered "core"
+        core_distance = .3 # Epsilon distance
+        core_samples = 10 # Number of points needed to be considered "core"
         # ABOVE VALUES BOTH NEED TUNING
 
         db = DBSCAN(eps=core_distance, min_samples=core_samples).fit(coordinates) # Performs the clustering
