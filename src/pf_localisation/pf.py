@@ -6,6 +6,10 @@ from .util import rotateQuaternion, getHeading
 from random import random , gauss, uniform
 from time import time
 
+import numpy as np
+from sklearn.cluster import DBSCAN
+from scipy.spatial import distance
+
 class PFLocaliser(PFLocaliserBase):
        
     def __init__(self):
