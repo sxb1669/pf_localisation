@@ -152,11 +152,11 @@ class PFLocaliser(PFLocaliserBase):
 
         return estimated_point
 """
-	def robot_kidnapped(self):
+	def re_intialisation(self):
 		num_particles = 500  # Number of particles in the particle cloud
 		for _ in range(num_particles):
-		    particle.position.x = initialpose.pose.pose.position.x + 6*(gauss(0, 1))  # Adjust noise parameters as needed
-		    particle.position.y = initialpose.pose.pose.position.y + 6*(gauss(0, 1)) # Adjust noise parameters as needed
+  			particle.position.x = 6*(gauss(0, 1))  # Starts at 0,0 so not effected by start pos of robot
+      			particle.position.y = 6*(gauss(0, 1))  # 6 times the variance is enough to cover the whole map
 
 		    initial_yaw = getHeading(initialpose.pose.pose.orientation)
 		    particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, 6*(gauss(0, 1)) ) 
