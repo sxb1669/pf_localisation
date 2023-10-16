@@ -77,24 +77,72 @@ class PFLocaliser(PFLocaliserBase):
         self.particlecloud = new_particle_cloud
 
     def estimate_pose(self):
-        num_particles = len(self.particlecloud.poses)
+        # return Pose()
+        # rospy.loginfo("estimating")
+        poses = self.particlecloud.poses
+        coordinates = np.array([[p.position.x, p.position.y] for p in poses]) # Extract the x,y coordinates
 
-        if num_particles == 0:
-            estimated_pose = self.estimatedpose.pose
-        else:
-            avg_x = sum(p.position.x for p in self.particlecloud.poses) / num_particles
-            avg_y = sum(p.position.y for p in self.particlecloud.poses) / num_particles
+        core_distance = .15 # Epsilon distance
+        core_samples = 50 # Number of points needed to be considered "core"
+        # ABOVE VALUES BOTH NEED TUNING
 
-            avg_quaternions = [p.orientation for p in self.particlecloud.poses]
-            avg_orientation = Quaternion()
-            avg_orientation.x = sum(q.x for q in avg_quaternions) / num_particles
-            avg_orientation.y = sum(q.y for q in avg_quaternions) / num_particles
-            avg_orientation.z = sum(q.z for q in avg_quaternions) / num_particles
-            avg_orientation.w = sum(q.w for q in avg_quaternions) / num_particles
+        db = DBSCAN(eps=core_distance, min_samples=core_samples).fit(coordinates) # Performs the clustering
+        labels = db.labels_
+        core_points_indices = db.core_sample_indices_
 
-            estimated_pose = Pose()
-            estimated_pose.position.x = avg_x
-            estimated_pose.position.y = avg_y
-            estimated_pose.orientation = avg_orientation
+        # If there are no clusters identified, then we average all particles
+        if not(labels.__contains__(0)):
+            # rospy.loginfo("no clusters found, averaging all")
+            estimated_point = Pose()
+            for p in poses: 
+                estimated_point.position.x += (p.position.x / len(poses))
+                estimated_point.position.y += (p.position.y / len(poses))
 
-        return estimated_pose
+                # Just average rotation
+                estimated_point.orientation.x = (p.orientation.x / len(poses))
+                estimated_point.orientation.y = (p.orientation.y / len(poses))
+                estimated_point.orientation.z = (p.orientation.z / len(poses))
+                estimated_point.orientation.w = (p.orientation.w / len(poses))
+            return estimated_point
+    
+        
+        # Remove all points except core points
+        best_cluster = []
+        for i in core_points_indices:
+            # The densest cluster will be the one with the label of 0
+            if labels[i] == 0:
+                best_cluster.append(poses[i])
+
+        x_coords = np.array([p.position.x for p in best_cluster])
+        y_coords = np.array([p.position.y for p in best_cluster])
+
+        estimated_point = Pose()
+        estimated_point.position.x = np.mean(x_coords)
+        estimated_point.position.y = np.mean(y_coords)
+
+        # Perform DBScan on orientation
+        # array of form [[x1, ...], [y1, ...], [z1, ...], [w1, ...]]
+        orientations = np.array([[p.orientation.x for p in best_cluster], [p.orientation.y for p in best_cluster], [p.orientation.z for p in best_cluster], [p.orientation.w for p in best_cluster]])
+        o_std = [np.std(o) for o in orientations] # standard deviations for 4 vals
+        o_mean = [np.mean(o) for o in orientations] # mean for 4 vals
+        ranges = [[o_mean[i] - 2 * o_std[i], o_mean[i] + 2 * o_std[i]] for i in range(0,4)] # get min and maxes that values should be in, in each of the dimensions (x, y, z, w)
+
+        estimated_orientation = Quaternion()
+        count = 0
+        # Remove values that are more than 2 std away from mean
+        for i in range(0, len(orientations[0])):
+            if all([(ranges[j][0] <= orientations[j][i] <= ranges[j][1]) for j in range(0, 4)]): # only add val to cal if it is in 2 standard deviations of the mean
+                estimated_orientation.x += orientations[0][i]
+                estimated_orientation.y += orientations[1][i]
+                estimated_orientation.z += orientations[2][i]
+                estimated_orientation.w += orientations[3][i]
+                count += 1
+
+        estimated_orientation.x = estimated_orientation.x / count    #calculate averges
+        estimated_orientation.y = estimated_orientation.y / count
+        estimated_orientation.z = estimated_orientation.z / count
+        estimated_orientation.w = estimated_orientation.w / count
+
+        estimated_point.orientation = estimated_orientation
+
+        return estimated_point
