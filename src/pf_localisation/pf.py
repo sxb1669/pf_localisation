@@ -142,6 +142,7 @@ class PFLocaliser(PFLocaliserBase):
         new_particle_cloud = PoseArray()
         new_particle_cloud.header.frame_id = "map"
 
+
         for _ in range(num_particles):
             particle = Pose()
             particle.position.x = 6 * gauss(0, 1)
@@ -153,10 +154,9 @@ class PFLocaliser(PFLocaliserBase):
             particle.orientation = rotateQuaternion(quat_msg, 6 * gauss(0, 1))
 
             new_particle_cloud.poses.append(particle)
+        return new_particle_cloud
 
-        self.particle_cloud = new_particle_cloud
-
-    def detect_kidnapping(self, min_weight_threshold=0.1):
+    def detect_kidnapping(self, min_weight_threshold=2):
         if not self.particle_weights:
                 return False
         # Calculate the average weight of particles
@@ -166,9 +166,14 @@ class PFLocaliser(PFLocaliserBase):
         # If the average weight falls below the threshold, consider it a kidnapping
         if average_weight < min_weight_threshold:
             self.kidnapped = True
+            print("True" ,average_weight)
+            return True
+
         else:
             self.kidnapped = False
-
+            print("False ", average_weight)
+            return False
+            
     def handle_kidnapping(self):
         if self.kidnapped:
             self.particlecloud = self.reinitialization()
