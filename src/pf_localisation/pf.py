@@ -17,6 +17,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_DRIFT_NOISE = 0
         self.kidnapped = False
         self.particle_weights = []
+        self.kidnapping_fixed = False
 
     def initialise_particle_cloud(self, initialpose):
         num_particles = 500  # Number of particles in the particle cloud
@@ -34,6 +35,7 @@ class PFLocaliser(PFLocaliserBase):
             particle.orientation = rotateQuaternion(initialpose.pose.pose.orientation, gauss(0, 0.35))  # Adjust noise parameters as needed
 
             particle_cloud.poses.append(particle)
+            self.kidnapping_fixed = False
 
         return particle_cloud
 
@@ -156,8 +158,10 @@ class PFLocaliser(PFLocaliserBase):
             new_particle_cloud.poses.append(particle)
         return new_particle_cloud
 
-    def detect_kidnapping(self, min_weight_threshold=2):
+    def detect_kidnapping(self, min_weight_threshold=4):
         if not self.particle_weights:
+                return False
+        if self.kidnapping_fixed :
                 return False
         # Calculate the average weight of particles
         total_weight = sum(self.particle_weights)
@@ -177,4 +181,5 @@ class PFLocaliser(PFLocaliserBase):
     def handle_kidnapping(self):
         if self.kidnapped:
             self.particlecloud = self.reinitialization()
+            self.kidnapping_fixed = True
             self.kidnapped = False
